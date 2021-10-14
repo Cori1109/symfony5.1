@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{# On crée des variables personnalisées #}
+{% set queryParams = app.request.query.all %}
+
+{% block title %}Liste des annonces{% endblock %}
+{% block stylesheets %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" />
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    <div class="grix xs1 sm5 gutter-0 card">
+        <div class="col-xs1">
+            <p>Filtrer</p>
+            <form id="filters">
+                {% for categorie in categories %}
+                    {# On vérifie si la catégorie est dans les paramètres #}
+                    {% if queryParams is not empty and queryParams.categories is defined %}
+                        {% set checked = (categorie.id in queryParams.categories) ? "checked" : "" %}
+                    {% else %}
+                        {% set checked = "" %}
+                    {% endif %}
+
+                    <p><input type="checkbox" name="categories[]" id="cat{{categorie.id}}" value="{{categorie.id}}" {{checked}}> <label for="cat{{categorie.id}}">{{categorie.name}}</label></p>
+                {% endfor %}
+                <input type="hidden" name="page" value="{{page}}">
+            </form>
+        </div>
+        <div class="col-xs1 col-sm4" id="content">
+            {% include "annonces/_content.html.twig" %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset('js/filters.js') }}"></script>
+{% endblock %}

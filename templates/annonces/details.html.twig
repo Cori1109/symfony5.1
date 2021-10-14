@@ -1,0 +1,119 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{annonce.title}}
+{% endblock %}
+{% block stylesheets %}
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css"/>
+{% endblock %}
+{% block body %}
+	<div class="container">
+	    {% for message in app.flashes('message') %}
+       		<div class="p-3 my-2 rounded-2 success">{{ message }}</div>
+    	{% endfor %}
+
+		<div class="caroulix" id="carousel">
+			<div class="caroulix-arrow caroulix-prev">
+				<i class="fas fa-chevron-left"></i>
+			</div>
+			<div class="caroulix-arrow caroulix-next">
+				<i class="fas fa-chevron-right"></i>
+			</div>
+			{% for image in annonce.images %}
+				<div class="caroulix-item">
+					<img src="{{ asset('uploads/images/annonces/' ~ image.name)|imagine_filter('banniere') }}" alt="{{ annonce.title }}"/>
+				</div>
+			{% endfor %}
+		</div>
+		<div class="grix xs2 sm3 gutter-0 card">
+			<div class="primary flex vcenter fx-center"></div>
+			<div class="col-sm2">
+				<div class="card-header">{{ annonce.title }}</div>
+				<div class="card-content">
+					<p>Catégorie :
+						{{ annonce.categories.name }}</p>
+					<p>
+						{{ annonce.content|raw }}
+					</p>
+					<p>
+						<button class="btn primary press modal-trigger" data-target="modale-contact">Contacter l'annonceur</button>
+					</p>
+                    {% if is_granted("annonce_edit", annonce) %}
+                    <p>
+                        <a href="{{ path("users_annonces_edit", {id: annonce.id})}}" class="btn primary press">Modifier</a>
+                    </p>
+                    {% endif %}
+                    {% if is_granted("annonce_delete", annonce) %}
+                    <p>
+                        <a href="{{ path("users_annonces_edit", {id: annonce.id})}}" class="btn red press">Supprimer</a>
+                    </p>
+                    {% endif %}
+				</div>
+			</div>
+		</div>
+		<div class="grix xs2 sm3 gutter-0 card">
+			<div class="col-xs2 col-sm3">
+				<h2>Liste des commentaires</h2>
+				{% for comment in annonce.comments %}
+					{% if comment.parent == null %}
+						<h3>Commentaire de {{comment.nickname}}</h3>
+						<p>Publié le {{comment.createdAt|date("d/m/Y H:i") }}</p>
+						<div>{{comment.content|raw}}</div>
+						<p><a href="#ajout-commentaire" data-reply data-id="{{comment.id}}" class="btn primary press">Répondre</a></p>
+
+						{# On affiche les réponses #}
+						{% for reply in comment.replies %}
+							<p>Réponse publiée par {{reply.nickname}} le {{reply.createdAt|date("d/m/Y H:i") }}</p>
+							<div>{{reply.content|raw}}</div>
+						{% endfor %}
+					{% endif %}
+				{% endfor %}
+			</div>
+			<div class="col-xs2 col-sm3" id="ajout-commentaire">
+				<h2>Ajouter un commentaire</h2>
+				{{ form_start(commentForm) }}
+				    {{ form_row(commentForm.email) }}
+				    {{ form_row(commentForm.nickname) }}
+                    <p>Message</p>
+                    <div id="editor"></div>
+				{{ form_end(commentForm) }}
+			</div>
+		</div>
+	</div>
+
+	<div class="modal white falling" id="modale-contact">
+		<div class="modal-header">Contacter l'annonceur</div>
+		<div class="divider"></div>
+		{{ form_start(form) }}
+		<div class="modal-content">
+			{{ form_widget(form.title) }}
+			{{ form_row(form.email) }}
+			{{ form_row(form.message) }}
+		</div>
+		<div class="divider"></div>
+		<div class="modal-footer">
+			<button class="btn small primary">Envoyer</button>
+			<button data-target="modale-contact" class="btn small secondary modal-trigger">Fermer</button>
+		</div>
+		{{ form_end(form) }}
+	</div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset('ckeditor5/ckeditor.js') }}"></script>
+    <script src="{{ asset('js/ckeditor.js') }}"></script>
+	<script>
+		window.onload = () => {
+			document.querySelector("#annonce_contact_title").value = "{{ annonce.title|raw }}";
+
+			// On met un écouteur d'évènements sur tous les boutons répondre
+			document.querySelectorAll("[data-reply]").forEach(element => {
+				element.addEventListener("click", function(){
+					document.querySelector("#comments_parentid").value = this.dataset.id;
+				});
+			});
+		}
+		let caroulix = new Caroulix('#carousel');
+		let modal = new Modal('#modale-contact');
+	</script>
+{% endblock %}

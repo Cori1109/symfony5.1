@@ -1,0 +1,39 @@
+{% extends 'users.html.twig' %}
+
+{% block title %}Données personnelles de {{ app.user.firstname }} {{ app.user.name }}{% endblock %}
+
+{% block body %}
+	<div class="grix xs4 container">
+		{% for message in app.flashes('message') %}
+			<div class="col-xs4">
+				<div class="p-3 my-2 rounded-2 success">{{message}}</div>
+			</div>
+		{% endfor %}
+		<div class="col-xs4">
+			<h1>Données personnelles de {{ app.user.firstname }} {{ app.user.name }}</h1>
+            <a href="{{ path('users_data_download') }}" class="btn blue">Télécharger les données</a>
+		</div>
+		<div class="col-xs1">Nom :</div>
+		<div class="col-xs3">{{ app.user.name }}</div>
+		<div class="col-xs1">Prénom :</div>
+		<div class="col-xs3">{{ app.user.firstname }}</div>
+		<div class="col-xs1">Email :</div>
+		<div class="col-xs3">{{ app.user.email }}</div>
+
+		<div class="col-xs4">
+			<h1>Annonces de {{ app.user.firstname }} {{ app.user.name }} ({{ app.user.annonces|length }})</h1>
+		</div>
+        {% for annonce in app.user.annonces %}
+            <div class="col-xs1">Titre :</div>
+            <div class="col-xs3">{{ annonce.title }}</div>
+            <div class="col-xs1">Contenu :</div>
+            <div class="col-xs3">{{ annonce.content }}</div>
+            <div class="col-xs4">
+            {% for image in annonce.images %}
+                <img src="{{ asset('uploads/images/annonces/' ~ image.name)|imagine_filter('square') }}" alt="{{ annonce.title }}">
+            {% endfor %}
+            </div>
+        {% endfor %}
+        
+	</div>
+{% endblock %}
